@@ -1,7 +1,15 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 #include <iostream>
-using namespace std;
+
+void get_from_server(sf::TcpSocket* socket) {
+    // Receive a message from the server
+    char in[128];
+    std::size_t received;
+    if (socket->receive(in, sizeof(in), received) != sf::Socket::Done)
+        std::cout << "Error while receiving.\n";
+    std::cout << "Message received from the server: \"" << in << "\"" << std::endl;
+}
 
 sf::TcpSocket* getServerSocket(unsigned short port) {
     sf::IpAddress server;
@@ -18,21 +26,17 @@ sf::TcpSocket* getServerSocket(unsigned short port) {
     if (socket->connect(server, port) != sf::Socket::Done)
         return nullptr;
     std::cout << "Connected to server " << server << std::endl;
-
-    // Receive a message from the server
-    char in[128];
-    std::size_t received;
-    if (socket->receive(in, sizeof(in), received) != sf::Socket::Done)
-        return nullptr;
-    std::cout << "Message received from the server: \"" << in << "\"" << std::endl;
+    get_from_server(socket);
+    
     return socket;
 }
-void sendToServer(string message, sf::TcpSocket* socket) {
+void sendToServer(std::string message, sf::TcpSocket* socket) {
 
     if (socket->send(message.c_str(), message.length() + 1) != sf::Socket::Done)
         return;
     std::cout << "Message sent to the MAIN server: \"" << message << "\"" << std::endl;
 }
+
 int main()
 {
 
@@ -42,16 +46,19 @@ int main()
     while (socket == nullptr) {
         socket = getServerSocket(port);
     }
-    string message = "";
-
-    cin >> message;
-    sendToServer(message, socket);
+    while (true) {
+        std::string message = "";
+        std::cin >> message;
+        sendToServer(message, socket);
+        get_from_server(socket);
+    }
+    
 
 
 
     sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
     sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Black);
+    shape.setFillColor(sf::Color::Yellow);
 
     while (window.isOpen())
     {
