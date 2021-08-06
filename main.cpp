@@ -1,8 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Network.hpp>
 #include <iostream>
-
-void get_from_server(sf::TcpSocket* socket) {
+#include "GameClasses/Coord.h"
+#include "GameClasses/GameObject.h"
+#include "GameClasses/Player.h"
+#include "GameClasses/Game.h"
+void getFromServer(sf::TcpSocket* socket) {
     // Receive a message from the server
     char in[128];
     std::size_t received;
@@ -10,7 +13,6 @@ void get_from_server(sf::TcpSocket* socket) {
         std::cout << "Error while receiving.\n";
     std::cout << "Message received from the server: \"" << in << "\"" << std::endl;
 }
-
 sf::TcpSocket* getServerSocket(unsigned short port) {
     sf::IpAddress server;
     do
@@ -26,7 +28,7 @@ sf::TcpSocket* getServerSocket(unsigned short port) {
     if (socket->connect(server, port) != sf::Socket::Done)
         return nullptr;
     std::cout << "Connected to server " << server << std::endl;
-    get_from_server(socket);
+    getFromServer(socket);
     
     return socket;
 }
@@ -39,7 +41,38 @@ void sendToServer(std::string message, sf::TcpSocket* socket) {
 
 int main()
 {
-
+    Player *p = new Player(0,1,1);
+    Game g(10,10);
+    g.addGameObject(p);
+    g.printWorld();
+    
+    while (true) {
+        std::cout << std::endl;
+        Coord c = p->get—oord();
+        std::cout << "Press WASD to move\n>";
+        int cmd = std::getchar();
+        switch (cmd)
+        {
+        case 'W':
+            g.moveGameObject(p, c.x, c.y - 1);
+            break;
+        case 'S':
+            g.moveGameObject(p, c.x, c.y + 1);
+            break;
+        case 'A':
+            g.moveGameObject(p, c.x - 1, c.y);
+            break;
+        case 'D':
+            g.moveGameObject(p, c.x + 1, c.y);
+            break;
+        default:
+            break;
+        }
+        std::cout << std::endl;
+        g.printWorld();
+    }
+    /*
+    
     const unsigned short port = 50001;
     sf::TcpSocket* socket;
     socket = getServerSocket(port);
@@ -53,7 +86,7 @@ int main()
         get_from_server(socket);
     }
     
-
+    */
 
 
     sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
